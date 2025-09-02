@@ -1,0 +1,10 @@
+Results for dataset: MTD, class group: all, task: detection
+
+| class   |   I-AUROC |   AP |
+|:--------|----------:|-----:|
+| MTD     |      80.2 | 87.9 |
+| mean    |      80.2 | 87.9 |
+
+Parameters:
+
+{'epochs': 100, 'batch_size': 8, 'image_size': 256, 'center_crop': 256, 'lr_s': 0.005, 'lr_t': 1e-06, 'T': 2, 'alpha': 0.01, 'beta': 3e-05}

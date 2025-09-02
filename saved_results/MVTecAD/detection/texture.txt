@@ -1,0 +1,22 @@
+Results for dataset: MVTecAD, class group: texture
+
+| class   |   I-AUROC |     AP |
+|:--------|----------:|-------:|
+| carpet  |    100    | 100    |
+| grid    |    100    | 100    |
+| leather |     97    |  98.9  |
+| tile    |     99.9  |  99.9  |
+| wood    |     99.8  |  99.9  |
+| mean    |     99.34 |  99.74 |
+
+Parameters:
+
+{
+    "epochs": 100,
+    "batch_size": 8,
+    "image_size": 256,
+    "center_crop": 256,
+    "lr_s": 5e-3,
+    "lr_t": 1e-6,
+    "T": 2,
+}

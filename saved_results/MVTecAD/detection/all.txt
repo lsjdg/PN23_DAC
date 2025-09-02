@@ -1,0 +1,32 @@
+Results for dataset: MVTecAD, class group: all
+
+| class      |   I-AUROC |     AP |
+|:-----------|----------:|-------:|
+| carpet     |    100    | 100    |
+| grid       |    100    | 100    |
+| leather    |     97    |  98.9  |
+| tile       |     99.9  |  99.9  |
+| wood       |     99.8  |  99.9  |
+| bottle     |    100    | 100    |
+| cable      |     99.7  |  99.8  |
+| capsule    |     98.8  |  99.7  |
+| hazelnut   |    100    | 100    |
+| metal_nut  |    100    | 100    |
+| pill       |     98.4  |  99.7  |
+| screw      |     95.6  |  98.4  |
+| toothbrush |     98.3  |  99.4  |
+| transistor |    100    | 100    |
+| zipper     |     97.9  |  99.4  |
+| mean       |     99.03 |  99.67 |
+
+Parameters:
+
+{
+    "epochs": 100,
+    "batch_size": 8,
+    "image_size": 256,
+    "center_crop": 256,
+    "lr_s": 5e-3,
+    "lr_t": 1e-6,
+    "T": 2,
+}

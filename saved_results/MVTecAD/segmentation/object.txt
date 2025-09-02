@@ -1,0 +1,27 @@
+Results for dataset: MVTecAD, class group: object
+
+| class      |   image_auroc |   pixel_auroc |   pixel_aupro |
+|:-----------|--------------:|--------------:|--------------:|
+| bottle     |        100    |         98.9  |         96.5  |
+| cable      |         99.8  |         98.5  |         94.4  |
+| capsule    |         98.9  |         99.1  |         94.8  |
+| hazelnut   |        100    |         98.9  |         96.7  |
+| metal_nut  |        100    |         98.7  |         96.4  |
+| pill       |         98.1  |         98.6  |         97    |
+| screw      |         94    |         99.5  |         97.8  |
+| toothbrush |         97.5  |         99.1  |         93.5  |
+| transistor |        100    |         97.5  |         94.8  |
+| zipper     |         95.4  |         98.7  |         95.6  |
+| mean       |         98.37 |         98.75 |         95.75 |
+
+Parameters:
+
+{
+    "epochs": 100,
+    "batch_size": 8,
+    "image_size": 256,
+    "center_crop": 256,
+    "lr_s": 5e-3,
+    "lr_t": 1e-6,
+    "T": 2,
+}
