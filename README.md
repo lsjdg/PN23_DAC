@@ -14,12 +14,12 @@ pip install -r requirements.txt --extra-index-url https://download.pytorch.org/w
 
 Run the following command for industrial domain, such as MVTec AD dataset:
 ```
-python main.py --setting oc --dataset "MVTecAD"
+python main.py --dataset "MVTecAD" --task "as"
 ```
 <br>
 <summary><strong> 2. Testing</strong></summary>
     
 With training on your own or saving the weight file we upload, you can test the model using the following command:
 ```
-python main.py --setting oc --dataset "MVTecAD" --load_ckpts
+python main.py --dataset "MVTecAD" --task "as" --load_ckpts --save_visuals
 ```
