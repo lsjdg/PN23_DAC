@@ -15,37 +15,25 @@ warnings.filterwarnings(
 
 
 def loading_dataset(c, dataset_name):
-    train_dataloader, test_dataloader = None, None
+    DATASET_CLASSES = {
+        "MVTecAD": MVTecDataset,
+        "MTD": MtdDataset,
+        "DAC": DACDataset,
+    }
 
-    if dataset_name == "MVTecAD":
-        train_data = MVTecDataset(c, is_train=True)
-        test_data = MVTecDataset(c, is_train=False)
-        train_dataloader = torch.utils.data.DataLoader(
-            train_data, batch_size=c.batch_size, shuffle=True, pin_memory=True
-        )
-        test_dataloader = torch.utils.data.DataLoader(
-            test_data, batch_size=1, shuffle=False, pin_memory=True
-        )
+    DatasetClass = DATASET_CLASSES.get(dataset_name)
+    if not DatasetClass:
+        print("Dataset does not exist")
+        return None, None
 
-    elif dataset_name == "MTD":
-        train_data = MtdDataset(c, is_train=True)
-        test_data = MtdDataset(c, is_train=False)
-        train_dataloader = torch.utils.data.DataLoader(
-            train_data, batch_size=c.batch_size, shuffle=True, pin_memory=True
-        )
-        test_dataloader = torch.utils.data.DataLoader(
-            test_data, batch_size=1, shuffle=False, pin_memory=True
-        )
-
-    elif dataset_name == "DAC":
-        train_data = MtdDataset(c, is_train=True)
-        test_data = MtdDataset(c, is_train=False)
-        train_dataloader = torch.utils.data.DataLoader(
-            train_data, batch_size=c.batch_size, shuffle=True, pin_memory=True
-        )
-        test_dataloader = torch.utils.data.DataLoader(
-            test_data, batch_size=1, shuffle=False, pin_memory=True
-        )
+    train_data = DatasetClass(c, is_train=True)
+    test_data = DatasetClass(c, is_train=False)
+    train_dataloader = torch.utils.data.DataLoader(
+        train_data, batch_size=c.batch_size, shuffle=True, pin_memory=True
+    )
+    test_dataloader = torch.utils.data.DataLoader(
+        test_data, batch_size=1, shuffle=False, pin_memory=True
+    )
 
     return train_dataloader, test_dataloader
 
@@ -188,18 +176,6 @@ class BaseADDataset(torch.utils.data.Dataset):
             [T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
         )
 
-
-class MVTecDataset(BaseADDataset):
-    def __init__(self, c, is_train=True, dataset="MVTecAD"):
-        super().__init__(c, is_train)
-        self.dataset_path = "../../../data/" + dataset
-        self.class_name = c._class_
-        phase = "train" if self.is_train else "test"
-        self.img_dir = os.path.join(self.dataset_path, self.class_name, phase)
-        self.gt_dir = os.path.join(self.dataset_path, self.class_name, "ground_truth")
-        # load dataset
-        self.x, self.y, self.mask, _ = self.load_dataset()
-
     def __getitem__(self, idx):
         x_path, y, mask_path = self.x[idx], self.y[idx], self.mask[idx]
         # Use .convert('RGB') to robustly handle both color and grayscale images,
@@ -219,12 +195,23 @@ class MVTecDataset(BaseADDataset):
     def __len__(self):
         return len(self.x)
 
+
+class MVTecDataset(BaseADDataset):
+    def __init__(self, c, is_train=True, dataset="MVTecAD"):
+        super().__init__(c, is_train)
+        self.dataset_path = "../../../data/" + dataset
+        self.class_name = c._class_
+        phase = "train" if self.is_train else "test"
+        self.img_dir = os.path.join(self.dataset_path, self.class_name, phase)
+        self.gt_dir = os.path.join(self.dataset_path, self.class_name, "ground_truth")
+        # load dataset
+        self.x, self.y, self.mask, _ = self.load_dataset()
+
     def load_dataset(self):
 
         img_tot_paths = list()
         gt_tot_paths = list()
         tot_labels = list()
-        tot_types = list()
 
         defect_types = os.listdir(self.img_dir)
 
@@ -250,7 +237,7 @@ class MVTecDataset(BaseADDataset):
             tot_labels
         ), "Something wrong with test and ground truth pair!"
 
-        return img_tot_paths, tot_labels, gt_tot_paths, tot_types
+        return img_tot_paths, tot_labels, gt_tot_paths
 
 
 class MtdDataset(BaseADDataset):
@@ -263,24 +250,6 @@ class MtdDataset(BaseADDataset):
 
         # load dataset
         self.x, self.y, self.mask = self.load_dataset()
-
-    def __getitem__(self, idx):
-        x_path, y, mask_path = self.x[idx], self.y[idx], self.mask[idx]
-        x = Image.open(x_path).convert("RGB")
-
-        if mask_path is None:
-            mask = Image.new("L", x.size, 0)
-        else:
-            mask = Image.open(mask_path).convert("L")
-
-        x_tensor, mask_tensor, padding_mask = self.transform(x, mask)
-
-        x_tensor = self.normalize(x_tensor)
-
-        return x_tensor, y, mask_tensor, padding_mask, x_path
-
-    def __len__(self):
-        return len(self.x)
 
     def load_dataset(self):
         img_paths = list()
@@ -317,3 +286,50 @@ class MtdDataset(BaseADDataset):
         ), f"Number of samples do not match for {self.phase}. Images: {len(img_paths)}, Labels: {len(labels)}"
 
         return img_paths, labels, gt_paths
+
+
+class DACDataset(BaseADDataset):
+    def __init__(self, c, is_train=True, dataset="DAC"):
+        super().__init__(c, is_train)
+        self.dataset_path = "../../../data/" + dataset
+        self.phase = "train" if is_train else "test"
+        self.class_name = c._class_
+        self.img_dir = os.path.join(self.dataset_path, self.class_name, self.phase)
+        self.gt_dir = os.path.join(self.dataset_path, self.class_name, "ground_truth")
+
+        # load dataset
+        self.x, self.y, self.mask = self.load_dataset()
+
+    def load_dataset(self):
+        img_tot_paths = list()
+        gt_tot_paths = list()
+        tot_labels = list()
+
+        defect_types = os.listdir(self.img_dir)
+
+        for defect_type in defect_types:
+            if defect_type == "good":
+                img_paths = glob.glob(os.path.join(self.img_dir, defect_type) + "/*")
+                img_paths.sort()
+                img_tot_paths.extend(img_paths)
+                gt_tot_paths.extend([None] * len(img_paths))
+                tot_labels.extend([0] * len(img_paths))
+            else:
+                img_paths = glob.glob(os.path.join(self.img_dir, defect_type) + "/*")
+                gt_paths = glob.glob(os.path.join(self.gt_dir, defect_type) + "/*")
+                img_paths.sort()
+                gt_paths.sort()
+                img_tot_paths.extend(img_paths)
+                gt_tot_paths.extend(gt_paths)
+                tot_labels.extend([1] * len(img_paths))
+
+        assert len(img_tot_paths) == len(
+            tot_labels
+        ), "Something wrong with test and ground truth pair!"
+
+        return img_tot_paths, tot_labels, gt_tot_paths
+
+
+if __name__ == "__main__":
+    dac_dataset = DACDataset()
+    print(dac_dataset)

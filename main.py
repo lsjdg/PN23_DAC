@@ -3,7 +3,6 @@ import os
 
 from train_unsupervisedAD import train
 from metadata import (
-    unsupervised,
     mvtec_dict,
     industrial,
 )
@@ -26,7 +25,7 @@ def parsing_args():
         "--dataset",
         default="MVTecAD",
         type=str,
-        choices=["MVTecAD", "MTD"],
+        choices=["MVTecAD", "MTD", "DAC"],
         help="choose experimental dataset.",
     )
     parser.add_argument(
@@ -130,7 +129,7 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------------------------------------------
     # --------------------------------------unsupervised industrial AD-----------------------------------------
     # ---------------------------------------------------------------------------------------------------------
-    if dataset_name in industrial and dataset_name in unsupervised:
+    if dataset_name in industrial:
         # -----------------------------train-------------------------------------
         if not c.load_ckpts:
             for idx, i in enumerate(dataset):
