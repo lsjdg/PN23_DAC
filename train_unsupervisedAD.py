@@ -2,6 +2,7 @@ import copy
 
 import torch
 import numpy as np
+import time
 import os
 
 from UniNet_lib.resnet import wide_resnet50_2
@@ -56,13 +57,14 @@ def train(c):
         0.0,
         0.0,
     )
-    early_stopping = EarlyStopping(patience=3, verbose=False)
+    early_stopping = EarlyStopping(patience=c.patience, verbose=False)
 
     # ---------------------------------------------training-----------------------------------------------
     for epoch in range(c.epochs):
         print(f"training epoch: {epoch + 1}")
         model.train_or_eval(type="train")
         loss_list = []
+        start_time = time.time()
         for sample in train_dataloader:
             img = sample[0].to(device)
             loss = model(img, stop_gradient=False)
@@ -76,8 +78,11 @@ def train(c):
 
             # ------------------------------------eval industrial and video-------------------------------------
 
+        epoch_duration = time.time() - start_time
         print(
-            "epoch [{}/{}], loss:{:.4f}".format(epoch + 1, c.epochs, np.mean(loss_list))
+            "epoch [{}/{}], loss:{:.4f}, time:{:.2f}s".format(
+                epoch + 1, c.epochs, np.mean(loss_list), epoch_duration
+            )
         )
 
         modules_list = [model.t.t_t, model.bn.bn, model.s.s1, DFS]
