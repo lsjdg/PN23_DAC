@@ -81,7 +81,7 @@ def train(c):
         )
 
         modules_list = [model.t.t_t, model.bn.bn, model.s.s1, DFS]
-        if (epoch + 1) % 3 == 0:
+        if (epoch + 1) % 10 == 0:
 
             # evaluation
             auroc_px, auroc_sp, aupro_px, ap = evaluation_indusAD(
