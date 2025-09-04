@@ -8,26 +8,14 @@ from eval import evaluation_indusAD, evaluation_batch
 from UniNet_lib.resnet import wide_resnet50_2
 from utils import load_weights, to_device
 from datasets import loading_dataset
-from metadata import unsupervised
 
 
-def test(
-    c, stu_type="un_cls", suffix="BEST_P_PRO", save_visuals=False
-):  # Added save_visuals parameter
+def test(c, stu_type="un_cls", suffix="BEST_P_PRO", save_visuals=False):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(device)
 
-    dataset_name = c.dataset
-    ckpt_path = None
-    if c._class_ in [dataset_name]:
-        ckpt_path = os.path.join("./ckpts", dataset_name)
-    else:
-        if c.setting == "oc":
-            ckpt_path = os.path.join("./ckpts", dataset_name, f"{c._class_}")
-        elif c.setting == "mc":
-            ckpt_path = os.path.join("./ckpts", f"{dataset_name}", "multiclass")
-        else:
-            pass
+    dataset_name = "DAC"
+    ckpt_path = os.path.join("./ckpts", dataset_name)
 
     # --------------------------------------loading dataset------------------------------------------
     dataset_info = loading_dataset(c, dataset_name)
@@ -69,12 +57,11 @@ def test(
 
     if c.domain == "industrial":
         if c.setting == "oc":
-            if dataset_name in unsupervised:
-                auroc_px, auroc_sp, pro, ap = evaluation_indusAD(  # Pass save_visuals
-                    c, model, test_dataloader, device, save_visuals=save_visuals
-                )
+            auroc_px, auroc_sp, pro, ap = evaluation_indusAD(  # Pass save_visuals
+                c, model, test_dataloader, device, save_visuals=save_visuals
+            )
 
-                return auroc_sp, auroc_px, pro, ap
+            return auroc_sp, auroc_px, pro, ap
 
         else:  # multiclass
             auroc_sp_list, ap_sp_list, f1_list = [], [], []
