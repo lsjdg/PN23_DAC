@@ -10,23 +10,12 @@ from utils import load_weights, to_device
 from datasets import loading_dataset
 
 
-def test(
-    c, stu_type="un_cls", suffix="BEST_P_PRO", save_visuals=False
-):  # Added save_visuals parameter
+def test(c, stu_type="un_cls", suffix="BEST_P_PRO", save_visuals=False):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(device)
 
-    dataset_name = c.dataset
-    ckpt_path = None
-    if c._class_ in [dataset_name]:
-        ckpt_path = os.path.join("./ckpts", dataset_name)
-    else:
-        if c.setting == "oc":
-            ckpt_path = os.path.join("./ckpts", dataset_name, f"{c._class_}")
-        elif c.setting == "mc":
-            ckpt_path = os.path.join("./ckpts", f"{dataset_name}", "multiclass")
-        else:
-            pass
+    dataset_name = "DAC"
+    ckpt_path = os.path.join("./ckpts", dataset_name)
 
     # --------------------------------------loading dataset------------------------------------------
     dataset_info = loading_dataset(c, dataset_name)

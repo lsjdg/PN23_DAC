@@ -1,7 +1,6 @@
-import math
 import re
 import time
-import os  # Added for path manipulation
+import os
 import torch
 import numpy as np
 from skimage.measure import regionprops
@@ -36,13 +35,12 @@ def evaluation_indusAD(
     original_paths = []
     gt_list_px = []
     gt_list_sp = []
-    padding_mask_list = []
     output_list = [list() for _ in range(n * 3)]
     weights_cnt = 0
 
     start_time = time.time()
-    with torch.no_grad():  # The dataloader now returns (sample, label, gt, padding_mask, path)
-        for idx, (sample, label, gt, padding_mask, path) in enumerate(dataloader):
+    with torch.no_grad():
+        for idx, (sample, label, gt, path) in enumerate(dataloader):
             # Store original images and paths for later visualization if save_visuals is enabled
             if save_visuals:
                 original_images.append(sample.cpu())  # Store the tensor
@@ -50,7 +48,6 @@ def evaluation_indusAD(
 
             gt_list_sp.extend(t2np(label))
             gt_list_px.extend(t2np(gt))
-            padding_mask_list.append(padding_mask.cpu().numpy())
             weights_cnt += 1
 
             img = sample.to(device)
@@ -69,11 +66,7 @@ def evaluation_indusAD(
 
         gt_label = np.asarray(gt_list_sp, dtype=np.bool_)
         gt_mask = np.squeeze(np.asarray(gt_list_px, dtype=np.bool_), axis=1)
-        padding_mask = np.squeeze(
-            np.concatenate(padding_mask_list, axis=0), axis=1
-        ).astype(np.bool_)
 
-        # anomaly_map을 gt_mask와 동일한 크기로 업샘플링하여 픽셀 레벨 AUROC 계산 오류를 해결합니다.
         anomaly_map = (
             F.interpolate(
                 torch.from_numpy(anomaly_map).unsqueeze(1),
@@ -85,15 +78,13 @@ def evaluation_indusAD(
             .numpy()
         )
 
-        # Filter out padded regions for pixel-level metrics
-        valid_pixels_gt = gt_mask[padding_mask]
-        valid_pixels_map = anomaly_map[padding_mask]
-
-        auroc_px = round(roc_auc_score(valid_pixels_gt, valid_pixels_map) * 100, 1)
+        auroc_px = round(
+            roc_auc_score(gt_mask.flatten(), anomaly_map.flatten()) * 100, 1
+        )
         auroc_sp = round(roc_auc_score(gt_label, anomaly_score) * 100, 1)
 
         ap = round(average_precision_score(gt_label, anomaly_score) * 100, 1)
-        pro = round(eval_seg_pro(gt_mask, anomaly_map, padding_mask=padding_mask), 1)
+        pro = round(eval_seg_pro(gt_mask, anomaly_map), 1)
 
     if save_visuals:
         abnormal_indices = np.where(gt_label == 1)[0]
@@ -128,23 +119,16 @@ def evaluation_indusAD(
     return auroc_px, auroc_sp, pro, ap
 
 
-def eval_seg_pro(gt_mask, anomaly_score_map, padding_mask=None, max_step=800):
+def eval_seg_pro(gt_mask, anomaly_score_map, max_step=800):
     expect_fpr = 0.3  # default 30%
-
-    if padding_mask is None:
-        # If no padding mask is provided, assume all pixels are valid.
-        padding_mask = np.ones_like(gt_mask, dtype=np.bool_)
 
     max_th = anomaly_score_map.max()
     min_th = anomaly_score_map.min()
     delta = (max_th - min_th) / max_step
     threds = np.arange(min_th, max_th, delta).tolist()
 
-    # Pass padding_mask to the parallel processes
     pool = Pool(8)
-    ret = pool.map(
-        partial(single_process, anomaly_score_map, gt_mask, padding_mask), threds
-    )
+    ret = pool.map(partial(single_process, anomaly_score_map, gt_mask), threds)
     pool.close()
     pros_mean = []
     fprs = []
@@ -165,38 +149,21 @@ def eval_seg_pro(gt_mask, anomaly_score_map, padding_mask=None, max_step=800):
     return loc_pro_auc
 
 
-def single_process(anomaly_score_map, gt_mask, padding_mask, thred):
+def single_process(anomaly_score_map, gt_mask, thred):
     binary_score_maps = np.zeros_like(anomaly_score_map, dtype=np.bool_)
     binary_score_maps[anomaly_score_map <= thred] = 0
     binary_score_maps[anomaly_score_map > thred] = 1
     pro = []
-    # Iterate over each image in the batch
-    for i in range(binary_score_maps.shape[0]):
-        binary_map = binary_score_maps[i]
-        mask = gt_mask[i]
+    for binary_map, mask in zip(binary_score_maps, gt_mask):  # for i th image
         for region in regionprops(label(mask)):
             axes0_ids = region.coords[:, 0]
             axes1_ids = region.coords[:, 1]
             tp_pixels = binary_map[axes0_ids, axes1_ids].sum()
             pro.append(tp_pixels / region.area)
 
-    # Handle cases where there are no ground truth regions in the batch
-    pros_mean = np.array(pro).mean() if pro else 0.0
-
-    # Corrected FPR calculation using the padding mask
-    # Valid normal pixels are where gt_mask is 0 AND padding_mask is 1 (True).
-    valid_normal_mask = np.logical_and(gt_mask == 0, padding_mask)
-
-    # False positives are where prediction is 1 on a valid normal pixel.
-    fp_pixels = np.logical_and(binary_score_maps, valid_normal_mask).sum()
-
-    # Total number of valid normal pixels.
-    total_valid_normal_pixels = valid_normal_mask.sum()
-
-    # Avoid division by zero.
-    fpr = (
-        0.0 if total_valid_normal_pixels == 0 else fp_pixels / total_valid_normal_pixels
-    )
+    pros_mean = np.array(pro).mean()
+    inverse_masks = 1 - gt_mask
+    fpr = np.logical_and(inverse_masks, binary_score_maps).sum() / inverse_masks.sum()
     return pros_mean, fpr
 
 
