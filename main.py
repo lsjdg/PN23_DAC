@@ -16,7 +16,7 @@ def parsing_args():
 
     parser.add_argument("--epochs", default=100, type=int, help="epochs.")
     parser.add_argument("--batch_size", default=8, type=int, help="batch sizes.")
-    parser.add_argument("--tile_size", default=1024, type=int, help="tile size.")
+    parser.add_argument("--image_size", default=1024, type=int, help="tile size.")
     parser.add_argument(
         "--lr_s", default=5e-3, type=float, help="lr for student."
     )  # 5e-3

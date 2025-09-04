@@ -106,8 +106,7 @@ class DarkenGlare:
 
 class DACDataset(torch.utils.data.Dataset):
     def __init__(self, c, is_train=True, dataset="DAC_noaug"):
-        self.is_train = is_train
-        self.image_size = (256, 256)
+        self.image_size = (c.image_size, c.image_size)
 
         self.pre_transform = DarkenGlare(use_hsv_thr=True)
 
