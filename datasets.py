@@ -243,7 +243,7 @@ class MVTecDataset(BaseADDataset):
 class MtdDataset(BaseADDataset):
     def __init__(self, c, is_train=True, dataset="MTD_exp"):
         super().__init__(c, is_train)
-        self.dataset_path = "../../../data/" + dataset
+        self.dataset_path = "../../data/" + dataset
         self.phase = "train" if is_train else "test"
         self.img_dir = os.path.join(self.dataset_path, self.phase)
         self.gt_dir = os.path.join(self.dataset_path, "ground_truth")
@@ -289,9 +289,9 @@ class MtdDataset(BaseADDataset):
 
 
 class DACDataset(BaseADDataset):
-    def __init__(self, c, is_train=True, dataset="DAC"):
+    def __init__(self, c, is_train=True, dataset="DAC_noaug"):
         super().__init__(c, is_train)
-        self.dataset_path = "../../../data/" + dataset
+        self.dataset_path = "../data/" + dataset
         self.phase = "train" if is_train else "test"
         self.class_name = c._class_
         self.img_dir = os.path.join(self.dataset_path, self.class_name, self.phase)

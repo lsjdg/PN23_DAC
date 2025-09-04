@@ -117,6 +117,8 @@ if __name__ == "__main__":
                 dataset = mvtec_dict[c.class_group]
         elif dataset_name == "MTD":
             dataset = ["MTD"]
+        elif dataset_name == "DAC":
+            dataset = ["SI_02", "SI_06"]
 
     else:
         raise KeyError(f"Dataset '{dataset_name}' can not be found.")
