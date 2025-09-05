@@ -105,15 +105,15 @@ class DarkenGlare:
 
 
 class DACDataset(torch.utils.data.Dataset):
-    def __init__(self, c, is_train=True, dataset="DAC_noaug"):
-        self.image_size = (c.image_size, c.image_size)
+    def __init__(self, c, is_train=True, dataset="DAC_noaug_crop"):
+        self.image_size = (c.image_height, c.image_width)
 
-        # self.pre_transform = DarkenGlare(use_hsv_thr=True)
+        self.pre_transform = DarkenGlare(use_hsv_thr=True)
         self.pre_transform = None
 
         self.transform_img = T.Compose(
             [
-                T.CenterCrop((2592, 416)),
+                # T.CenterCrop((2592, 416)),
                 T.Resize(self.image_size, interpolation=T.InterpolationMode.LANCZOS),
                 T.ToTensor(),
                 T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
@@ -121,7 +121,7 @@ class DACDataset(torch.utils.data.Dataset):
         )
         self.transform_mask = T.Compose(
             [
-                T.CenterCrop((2592, 416)),
+                # T.CenterCrop((2592, 416)),
                 T.Resize(self.image_size, interpolation=T.InterpolationMode.NEAREST),
                 T.ToTensor(),
             ]

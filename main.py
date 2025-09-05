@@ -18,7 +18,8 @@ def parsing_args():
     parser.add_argument("--epochs", default=100, type=int, help="epochs.")
     parser.add_argument("--patience", default=3, type=int, help="patience.")
     parser.add_argument("--batch_size", default=8, type=int, help="batch sizes.")
-    parser.add_argument("--image_size", default=1024, type=int, help="tile size.")
+    parser.add_argument("--image_width", default=320, type=int, help="image_width.")
+    parser.add_argument("--image_height", default=320, type=int, help="image_height.")
     parser.add_argument(
         "--lr_s", default=5e-3, type=float, help="lr for student."
     )  # 5e-3
@@ -167,7 +168,8 @@ if __name__ == "__main__":
         param_grid = {
             "epochs": c.epochs,
             "batch_size": c.batch_size,
-            "image_size": c.image_size,
+            "image_width": c.image_width,
+            "image_height": c.image_height,
             "lr_s": c.lr_s,
             "lr_t": c.lr_t,
             "T": c.T,
@@ -175,18 +177,12 @@ if __name__ == "__main__":
             "beta": c.beta,
         }
 
-        # Save results to a file
-        if c.task == "as":
-            task_name = "segmentation"
-        else:
-            task_name = "detection"
-
-        result_path = os.path.join("./saved_results", c.dataset, task_name)
+        result_path = os.path.join("./saved_results", c.dataset)
         os.makedirs(result_path, exist_ok=True)
         result_file_path = os.path.join(result_path, f"{c.class_group}.txt")
         with open(result_file_path, "w") as f:
             f.write(
-                f"Results for dataset: {c.dataset}, class group: {c.class_group}, task: {task_name}\n\n"
+                f"Results for dataset: {c.dataset}, class group: {c.class_group}\n\n"
             )
             f.write(results)
 
