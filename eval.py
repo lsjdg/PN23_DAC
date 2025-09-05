@@ -89,7 +89,7 @@ def evaluation_indusAD(
     if save_visuals:
         abnormal_indices = np.where(gt_label == 1)[0]
 
-        base_visual_save_dir = os.path.join(c.save_dir, "visuals", c.dataset, c._class_)
+        base_visual_save_dir = os.path.join(c.save_dir, "visuals", "DAC", c._class_)
 
         print(
             f"Saving visuals for {len(abnormal_indices)} abnormal samples to {base_visual_save_dir}..."

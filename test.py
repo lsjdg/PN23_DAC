@@ -55,20 +55,8 @@ def test(c, stu_type="un_cls", suffix="BEST_P_PRO", save_visuals=False):
         )
         print("using UniNet model")
 
-    if c.domain == "industrial":
-        if c.setting == "oc":
-            auroc_px, auroc_sp, pro, ap = evaluation_indusAD(  # Pass save_visuals
-                c, model, test_dataloader, device, save_visuals=save_visuals
-            )
+    auroc_px, auroc_sp, pro, ap = evaluation_indusAD(  # Pass save_visuals
+        c, model, test_dataloader, device, save_visuals=save_visuals
+    )
 
-            return auroc_sp, auroc_px, pro, ap
-
-        else:  # multiclass
-            auroc_sp_list, ap_sp_list, f1_list = [], [], []
-            # test_dataloader: List
-            for test_loader in test_dataloader:
-                auroc_sp, ap_sp, f1 = evaluation_batch(c, model, test_loader, device)
-                auroc_sp_list.append(auroc_sp * 100)
-                ap_sp_list.append(ap_sp * 100)
-                f1_list.append(f1 * 100)
-            return auroc_sp_list, ap_sp_list, f1_list, dataset_info[-2]
+    return auroc_sp, auroc_px, pro, ap

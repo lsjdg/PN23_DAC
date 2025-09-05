@@ -14,6 +14,7 @@ from test import test
 def parsing_args():
     parser = argparse.ArgumentParser(description="UniNet")
 
+    parser.add_argument("--task", default="as", type=str, help="task.")
     parser.add_argument("--epochs", default=100, type=int, help="epochs.")
     parser.add_argument("--patience", default=3, type=int, help="patience.")
     parser.add_argument("--batch_size", default=8, type=int, help="batch sizes.")
