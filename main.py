@@ -167,7 +167,7 @@ if __name__ == "__main__":
         param_grid = {
             "epochs": c.epochs,
             "batch_size": c.batch_size,
-            "tile_size": c.tile_size,
+            "image_size": c.image_size,
             "lr_s": c.lr_s,
             "lr_t": c.lr_t,
             "T": c.T,
